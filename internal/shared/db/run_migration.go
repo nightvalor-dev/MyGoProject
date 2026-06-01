@@ -1,0 +1,3 @@
+package db
+
+// RUN THE MIGRATION FILES
