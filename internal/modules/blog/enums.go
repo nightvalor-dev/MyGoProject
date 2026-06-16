@@ -3,7 +3,7 @@ package blog
 type BlogStatus string
 
 const (
-	StatusDraft     BlogStatus = "draft"
+	StatusDraft     BlogStatus = "drafted"
 	StatusPublished BlogStatus = "published"
 	StatusArchived  BlogStatus = "archived"
 )

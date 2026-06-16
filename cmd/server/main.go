@@ -1,6 +1,8 @@
 package main
 
 import (
+	"Project2-v3/internal/modules/comment"
+	"Project2-v3/internal/modules/user"
 	"fmt"
 	"log"
 	"net/http"
@@ -8,6 +10,8 @@ import (
 	"Project2-v3/api"
 	"Project2-v3/config"
 	"Project2-v3/internal/modules/blog"
+	"Project2-v3/internal/modules/category"
+	"Project2-v3/internal/modules/tag"
 	db "Project2-v3/internal/shared/db"
 )
 
@@ -21,16 +25,30 @@ func main() {
 	defer pool.Close()
 
 	blogRepo := blog.NewBlogRepository(pool)
-	blogService := blog.NewBlogService(blogRepo)
-	blogHandler := blog.NewBlogHandler(blogService)
+	categoryRepo := category.NewCatRepository(pool)
+	tagRepo := tag.NewTagRepository(pool)
 
-	router := api.NewRouter(blogHandler)
+	blogService := blog.NewBlogService(blogRepo, categoryRepo, tagRepo)
+	categoryService := category.NewCategoryService(categoryRepo)
+	tagService := tag.NewTagService(tagRepo)
+
+	blogHandler := blog.NewBlogHandler(blogService)
+	categoryHandler := category.NewCategoryHandler(categoryService)
+	tagHandler := tag.NewTagHandler(tagService)
+
+	commentRepo := comment.NewCommentRepository(pool)
+	commentService := comment.NewCommentService(commentRepo)
+	commentHandler := comment.NewCommentHandler(commentService)
+
+	userRepo := user.NewUserRepository(pool)
+	userService := user.NewUserService(userRepo)
+	userHandler := user.NewUserHandler(userService)
+
+	router := api.NewRouter(blogHandler, categoryHandler, tagHandler, commentHandler, userHandler)
 
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)
 	log.Printf("server running on %s", addr)
-
-	err = http.ListenAndServe(addr, router)
-	if err != nil {
+	if err := http.ListenAndServe(addr, router); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
 }
